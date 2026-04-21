@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TuzShop</title>
     <link rel="stylesheet" href="css/normalize.css">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <meta charset="UTF-8">
-    <title>TechShop</title>
 </head>
 <body>
 
 <header>
-    <h1>TechShop</h1>
-
+    <div class="logo-container">
+        <a href="#" class="logo-wrapper">
+            <img src="images/logo.png" alt="TechShop Logo" class="logo-img">
+            <h1>TuzShop</h1>
+        </a>
+    </div>
     <nav>
         <a href="#">Головна</a>
         <a href="#">Товари</a>
@@ -25,65 +29,64 @@
 </header>
 
 <main>
-
-    <section>
+    <section class="hero">
         <h2>Новинки 2025</h2>
         <p>Ознайомтесь із найновішими гаджетами цього року</p>
-        <a href="#">Переглянути товари</a>
+        <a href="#" class="btn">Переглянути товари</a>
     </section>
 
-    <section>
-        <h2>Популярні товари</h2>
+    <section class="container">
+        <h2 class="section-title">Популярні товари</h2>
+        
+        <div class="products-grid">
+            <article class="product-card">
+                <div class="image-wrapper">
+                    <img src="images/telephone.png" alt="ТЦК Фон">
+                </div>
+                <h3>ТЦК Фон</h3>
+                <p>4 кнопки Т Ц К і кнопка визов</p>
+                <p class="price">6767 грн</p>
+                <a href="#" class="btn-buy">Купити</a>
+            </article>
 
-        <article>
-            <img src= Прочний военний телефон alt="Товар 1">
-            <h3>ТЦК Фон</h3>
-            <p>4 кнопки Т Ц К і кнопка визов</p>
-            <p>Ціна: 6767 грн</p>
-            <a href="#">Купити</a>
-        </article>
+            <article class="product-card">
+                <div class="image-wrapper">
+                    <img src="images/nout.png" alt="Ноутбук ім. Дегона">
+                </div>
+                <h3>Ноутбук ім. Дегона</h3>
+                <p>Сучасний вибір для професіоналів.</p>
+                <p class="price">33767 грн</p>
+                <a href="#" class="btn-buy">Купити</a>
+            </article>
 
-        <article>
-            <img src="https://via.placeholder.com/150" alt="Товар 2">
-            <h3>Ноутбук ім. Дегона</h3>
-            <p>Сучасний вибір для професіоналів, які цінують якість та продуктивність.</p>
-            <p>Ціна: 33767 грн</p>
-            <a href="#">Купити</a>
-        </article>
+            <article class="product-card">
+                <div class="image-wrapper">
+                    <img src="images/chasi.png" alt="Товар 3">
+                </div>
+                <h3>Смарт-туз</h3>
+                <p>Керування розумним тузологом.</p>
+                <p class="price">6700 грн</p>
+                <a href="#" class="btn-buy">Купити</a>
+            </article>
 
-        <article>
-            <img src="https://via.placeholder.com/150" alt="Товар 3">
-            <h3>Смарт-туз</h3>
-            <p>Сучасний пристрій для управління розумним тузологом.</p>
-            <p>Ціна: 6700 грн</p>
-            <a href="#">Купити</a>
-        </article>
-
-        <article>
-            <img src="https://via.placeholder.com/150" alt="Товар 4">
-            <h3>Бездротові навушники</h3>
-            <p>Чистий звук та довгий час роботи без підзарядки.</p>
-            <p>Ціна: 2500 грн</p>
-            <a href="#">Купити</a>
-        </article>
-
+            <article class="product-card">
+                <div class="image-wrapper">
+                    <img src="images/headphone.png" alt="Товар 4">
+                </div>
+                <h3>Бездротові навушники</h3>
+                <p>Чистий звук та довгий час роботи.</p>
+                <p class="price">2500 грн</p>
+                <a href="#" class="btn-buy">Купити</a>
+            </article>
+        </div>
     </section>
-
 </main>
 
 <footer>
-    <p>Контактна інформація: info@techshop.ua | +380 00 000 00 00</p>
-    <p>&copy; 2025 TechShop</p>
-
-    <ul>
-        <li><a href="#">Facebook</a></li>
-        <li><a href="#">Instagram</a></li>
-    </ul>
-
-    <form>
-        <input type = "email" placeholder="Ваш email">
-        <button>Підписатися</button>
-    </form>
+    <div class="info">
+        <p>info@techshop.ua | +380 00 000 00 00</p>
+        <p>&copy; 2025 TechShop</p>
+    </div>
 </footer>
 
 </body>
