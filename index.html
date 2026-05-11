@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TuzShop</title>
-    <link rel="stylesheet" href="css/normalize.css">
+    <title>TuzShop — Магазин майбутнього</title>
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,13 +12,8 @@
 </head>
 <body>
 
-<header>
-    <div class="logo-container">
-        <a href="#" class="logo-wrapper">
-            <img src="images/logo.png" alt="TechShop Logo" class="logo-img">
-            <h1>TuzShop</h1>
-        </a>
-    </div>
+<header class="header">
+    <h1>TuzShop</h1>
     <nav>
         <a href="#">Головна</a>
         <a href="#">Товари</a>
@@ -32,60 +27,76 @@
     <section class="hero">
         <h2>Новинки 2025</h2>
         <p>Ознайомтесь із найновішими гаджетами цього року</p>
-        <a href="#" class="btn">Переглянути товари</a>
     </section>
 
-    <section class="container">
-        <h2 class="section-title">Популярні товари</h2>
+    <div class="page-layout">
         
-        <div class="products-grid">
-            <article class="product-card">
-                <div class="image-wrapper">
-                    <img src="images/telephone.png" alt="ТЦК Фон">
-                </div>
-                <h3>ТЦК Фон</h3>
-                <p>4 кнопки Т Ц К і кнопка визов</p>
-                <p class="price">6767 грн</p>
-                <a href="#" class="btn-buy">Купити</a>
-            </article>
+        <aside class="sidebar">
+            <h3>Фільтри</h3>
+            <div class="filter-group">
+                <h4>Категорії</h4>
+                <ul>
+                    <li><label><input type="checkbox"> Ноутбуки</label></li>
+                    <li><label><input type="checkbox"> Смартфони</label></li>
+                    <li><label><input type="checkbox"> Аксесуари</label></li>
+                    <li><label><input type="checkbox"> Навушники</label></li>
+                </ul>
+            </div>
+            <div class="filter-group">
+                <h4>Ціна</h4>
+                <input type="range" min="0" max="50000">
+            </div>
+        </aside>
 
-            <article class="product-card">
-                <div class="image-wrapper">
-                    <img src="images/nout.png" alt="Ноутбук ім. Дегона">
-                </div>
-                <h3>Ноутбук ім. Дегона</h3>
-                <p>Сучасний вибір для професіоналів.</p>
-                <p class="price">33767 грн</p>
-                <a href="#" class="btn-buy">Купити</a>
-            </article>
+        <section class="products-content">
+            <h2>Популярні товари</h2>
+            
+            <div class="products-grid">
+                <article class="product-card">
+                    <img src="https://via.placeholder.com/250x200" alt="ТЦК Фон">
+                    <h3>ТЦК Фон</h3>
+                    <p>4 кнопки Т Ц К і кнопка визов. Надійність понад усе.</p>
+                    <p class="price">Ціна: 6767 грн</p>
+                    <a href="#" class="buy-btn">Купити</a>
+                </article>
 
-            <article class="product-card">
-                <div class="image-wrapper">
-                    <img src="images/chasi.png" alt="Товар 3">
-                </div>
-                <h3>Смарт-туз</h3>
-                <p>Керування розумним тузологом.</p>
-                <p class="price">6700 грн</p>
-                <a href="#" class="btn-buy">Купити</a>
-            </article>
+                <article class="product-card">
+                    <img src="https://via.placeholder.com/250x200" alt="Ноутбук">
+                    <h3>Ноутбук ім. Дегона</h3>
+                    <p>Сучасний вибір для професіоналів, які цінують якість.</p>
+                    <p class="price">Ціна: 33767 грн</p>
+                    <a href="#" class="buy-btn">Купити</a>
+                </article>
 
-            <article class="product-card">
-                <div class="image-wrapper">
-                    <img src="images/headphone.png" alt="Товар 4">
-                </div>
-                <h3>Бездротові навушники</h3>
-                <p>Чистий звук та довгий час роботи.</p>
-                <p class="price">2500 грн</p>
-                <a href="#" class="btn-buy">Купити</a>
-            </article>
-        </div>
-    </section>
+                <article class="product-card">
+                    <img src="https://via.placeholder.com/250x200" alt="Смарт-туз">
+                    <h3>Смарт-туз</h3>
+                    <p>Сучасний пристрій для управління розумним тузологом.</p>
+                    <p class="price">Ціна: 6700 грн</p>
+                    <a href="#" class="buy-btn">Купити</a>
+                </article>
+
+                <article class="product-card">
+                    <img src="https://via.placeholder.com/250x200" alt="Навушники">
+                    <h3>Бездротові навушники</h3>
+                    <p>Чистий звук та довгий час роботи без підзарядки.</p>
+                    <p class="price">Ціна: 2500 грн</p>
+                    <a href="#" class="buy-btn">Купити</a>
+                </article>
+            </div>
+        </section>
+    </div>
 </main>
 
 <footer>
-    <div class="info">
-        <p>info@techshop.ua | +380 00 000 00 00</p>
-        <p>&copy; 2025 TechShop</p>
+    <div class="footer-content">
+        <div class="footer-info">
+            <p>Контактна інформація: info@tuzshop.ua | +380 00 000 00 00</p>
+            <p>&copy; 2025 TuzShop</p>
+        </div>
+        <form class="subscribe-form">
+            <button type="submit">Зареєструватися</button>
+        </form>
     </div>
 </footer>
 
