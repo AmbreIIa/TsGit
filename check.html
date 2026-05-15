@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформлення замовлення — TuzShop</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="header">
+    <div class="Logo"> <img src="images/logo.png" class="logo" height="115" alt="Logo">
+        <h1>TuzShop</h1>
+    </div>
+    <nav>
+        <a href="index.html">Головна</a>
+        <a href="#">Товари</a>
+        <a href="check.html">Кошик</a>
+    </nav>
+</header>
+
+<main>
+    <div class="checkout-container">
+        <h2>Оформлення замовлення</h2>
+        <form action="#" method="POST" class="checkout-form">
+            <fieldset>
+                <legend>1. Особисті дані</legend>
+                <div class="form-group">
+                    <label for="fullName">ПІБ:</label>
+                    <input type="text" id="fullName" name="fullName" required placeholder="Іванов Іван Іванович">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Телефон:</label>
+                    <input type="tel" id="phone" name="phone" pattern="[\+]\d{12}" placeholder="+380991234567" required title="Формат: +380XXXXXXXXX">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>2. Спосіб доставки</legend>
+                <div class="form-radio"><input type="radio" id="n" name="d" checked><label for="n">Нова Пошта</label></div>
+                <div class="form-radio"><input type="radio" id="c" name="d"><label for="c">Укрпошта</label></div>
+                <div class="form-group">
+
+                    <label for="city">Місто:</label>
+                    <select id="city"><option>Київ</option><option>Львів</option><option>Одеса</option></select>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>3. Додатково</legend>
+                <div class="form-group">
+                    <label for="comm">Коментар:</label>
+                    <textarea id="comm" rows="3"></textarea>
+                </div>
+                <div class="form-checkbox">
+                    <input type="checkbox" id="agree" required>
+                    <label for="agree">Я погоджуюсь з правилами</label>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="buy-btn">Підтвердити замовлення</button>
+        </form>
+    </div>
+</main>
+
+<footer><p>&copy; 2026 TuzShop</p></footer>
+
+</body>
+</html>
