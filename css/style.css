@@ -90,8 +90,6 @@ header {
 }
 
 .sidebar { background: var(--header-bg); padding: 20px; border-radius: 12px; height: fit-content; }
-.sidebar ul { list-style: none; padding: 0; }
-.sidebar li { margin-bottom: 10px; }
 
 .products-grid {
   display: grid;
@@ -159,28 +157,10 @@ footer {
   background: #111827;
   color: white;
   padding: 40px 5%;
-}
-
-.footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
-
-/* Соцмережі у Футері */
-.social-links {
   display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
 }
-
-.social-links svg {
-  stroke: var(--white-bg);
-  transition: stroke 0.3s ease;
-}
-
-.social-links a:hover svg {
-  stroke: var(--primary-color);
-}
-
 
 @media screen and (max-width: 768px) {
   .menu-toggle {
@@ -201,8 +181,4 @@ footer {
     gap: 20px;
   }
 
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-  }
 }
