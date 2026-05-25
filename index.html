@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TuzShop — Магазин майбутнього</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,16 +13,38 @@
 
 <header class="header">
     <div class="Logo">
-        <img src="images/logo.png"class="logo", height = "115">
+        <img src="images/logo.png" class="logo" height="115" alt="TuzShop Logo">
         <h1>TuzShop</h1>
     </div>
     
-    <nav>
-        <a href="#">Головна</a>
-        <a href="#">Товари</a>
-        <a href="#">Про нас</a>
-        <a href="#">Контакти</a>
-        <a href="#">Кошик</a>
+    <button class="menu-toggle" aria-label="Відкрити меню">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+    </button>
+
+    <nav class="main-nav">
+        <ul>
+            <li><a href="index.html">Головна</a></li>
+            <li><a href="#">Товари</a></li>
+            <li><a href="#">Про нас</a></li>
+            <li>
+                <a href="check.html" class="btn-cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    <span>Контакти</span>
+                </a>
+            </li>
+            <li>
+                <a href="check.html" class="btn-cart">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121 -2.3 2.1 -4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                    </svg>
+                    <span>Кошик</span>
+                </a>
+            </li>
+        </ul>
     </nav>
 </header>
 
@@ -34,7 +55,6 @@
     </section>
 
     <div class="page-layout">
-        
         <aside class="sidebar">
             <h3>Фільтри</h3>
             <div class="filter-group">
@@ -92,8 +112,9 @@
     <div class="footer-content">
         <div class="footer-info">
             <p>Контактна інформація: info@tuzshop.ua | +380 00 000 00 00</p>
-            <p>&copy; 2025 TuzShop</p>
+            <p>&copy; 2026 TuzShop</p>
         </div>
+
         <form class="subscribe-form">
             <a href="check.html" class="reg-btn">Оформити замовлення</a>
         </form>
