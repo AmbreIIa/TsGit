@@ -153,7 +153,6 @@ header {
 
 .buy-btn:hover, .reg-btn:hover { background: var(--primary-hover); }
 
-/* --- Стилі спінера завантаження --- */
 .loader-container {
   display: flex;
   flex-direction: column;
