@@ -1,4 +1,7 @@
 let cart = [];
+
+let globalStoreProducts = [];
+/*
 const products = [
   {
     id: 1,
@@ -36,6 +39,7 @@ const products = [
     image: "images/Chehol_headphone.jpg"
   },
 ];
+*/
 
 const cartButton = document.getElementById("cartBtn");
 const cartOverlay = document.getElementById("cartOverlay");
@@ -58,12 +62,24 @@ cartOverlay.addEventListener("click", (event) => {
     closeCartModal();
   }
 });
-function fetchProducts() {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve(products);
-    }, 1500); 
-  });
+async function fetchProducts() {
+  try {
+    const response = await fetch(
+      "https://fakestoreapi.com/products?limit=8",
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP помилка: ${response.status}`);
+    }
+
+    const realProducts = await response.json();
+
+    return realProducts;
+    } catch (error) {
+      console.error("Помилка завантаження товарів: ", error.message);
+
+      throw error;
+  }
 }
 
 function updateUI() {
@@ -74,12 +90,11 @@ function updateUI() {
     cartCounter.textContent = totalItems;
   }
 
-  const cartContainer = document.getElementById("cartContainer");
-  if (cartContainer) {
+  if (cartItemsContainer) {
     if (cart.length === 0) {
-      cartContainer.innerHTML = "<p>Кошик порожній</p>";
+      cartItemsContainer.innerHTML = "<p>Кошик порожній</p>";
     } else {
-      const cartItemsHTML = cart
+      cartItemsContainer.innerHTML = cart
         .map(
           (item) => `
             <div class="cart-item" data-id="${item.id}">
@@ -102,7 +117,7 @@ function updateUI() {
 
   const totalSumElement = document.getElementById("cartTotalSum");
   if (totalSumElement) {
-    totalSumElement.textContent = `Загальна сума: ${calculateTotal()} грн`;
+    totalSumElement.textContent = calculateTotal().toFixed(2);
   }
 
   console.log("Поточний кошик:", cart);
@@ -134,8 +149,12 @@ if (container) {
   container.addEventListener("click", (event) => {
     if (event.target.classList.contains("btn-buy")) {
       const productId = Number(event.target.dataset.id);
-      const selectProduct = products.find((p) => p.id === productId);
-      addToCart(selectProduct);
+
+      const selectProduct = globalStoreProducts.find((p) => p.id === productId);
+
+      if (selectProduct) {
+        addToCart(selectProduct);
+      }
     }
   });
 }
@@ -149,6 +168,8 @@ async function initShop() {
 
   try {
     const data = await fetchProducts();
+
+    globalStoreProducts = data;
 
     if (loader) loader.classList.add("hidden");
 
