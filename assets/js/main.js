@@ -37,6 +37,27 @@ const products = [
   },
 ];
 
+const cartButton = document.getElementById("cartBtn");
+const cartOverlay = document.getElementById("cartOverlay");
+const closeBtn = document.getElementById("closeCartBtn");
+
+function openCartModal() {
+  cartOverlay.classList.remove("hidden");
+  updateUI();
+}
+
+function closeCartModal() {
+  cartOverlay.classList.add("hidden");
+}
+
+cartButton.addEventListener("click", openCartModal);
+closeBtn.addEventListener("click", closeCartModal);
+
+cartOverlay.addEventListener("click", (event) => {
+  if (event.target === cartOverlay) {
+    closeCartModal();
+  }
+});
 function fetchProducts() {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -51,6 +72,37 @@ function updateUI() {
 
   if (cartCounter) {
     cartCounter.textContent = totalItems;
+  }
+
+  const cartContainer = document.getElementById("cartContainer");
+  if (cartContainer) {
+    if (cart.length === 0) {
+      cartContainer.innerHTML = "<p>Кошик порожній</p>";
+    } else {
+      const cartItemsHTML = cart
+        .map(
+          (item) => `
+            <div class="cart-item" data-id="${item.id}">
+              <img src="${item.image}" alt="${item.title}" width="50">
+              <div class="cart-item-info">
+                <h4>${item.title}</h4>
+                <p>${item.price} грн</p>
+              </div>
+              <div class="cart-item-controls">
+                <button class="btn-decrease" data-id="${item.id}">-</button>
+                <span>${item.quantity}</span>
+                <button class="btn-increase" data-id="${item.id}">+</button>
+              </div>
+            </div>
+          `
+        )
+        .join("");
+    } 
+  }
+
+  const totalSumElement = document.getElementById("cartTotalSum");
+  if (totalSumElement) {
+    totalSumElement.textContent = `Загальна сума: ${calculateTotal()} грн`;
   }
 
   console.log("Поточний кошик:", cart);
@@ -71,7 +123,8 @@ function addToCart(product) {
 
 function calculateTotal() {
   return cart.reduce(
-    (total, item) => total + item.price * item.quantity, 0
+    (total, item) => total + item.price * item.quantity,
+    0
   );
 }
 
