@@ -1,49 +1,10 @@
 let cart = [];
-
 let globalStoreProducts = [];
-/*
-const products = [
-  {
-    id: 1,
-    title: "ТЦК Фон",
-    price: 6767,
-    category: "Телефони",
-    image: "images/telephone.png"
-  },
-  {
-    id: 2,
-    title: "Ноутбук ім. Дегона",
-    price: 33767,
-    category: "Ноутбуки",
-    image: "images/nout.png"
-  },
-  {
-    id: 3,
-    title: "Смарт туз",
-    price: 6700,
-    category: "Годинники",
-    image: "images/chasi.png"
-  },
-  {
-    id: 4,
-    title: "Еір Туз Про",
-    price: 22867,
-    category: "Навушники",
-    image: "images/headphone.png"
-  },
-  {
-    id: 5,
-    title: "Чохол для навушників",
-    price: 670,
-    category: "Аксесуари",
-    image: "images/Chehol_headphone.jpg"
-  },
-];
-*/
 
 const cartButton = document.getElementById("cartBtn");
 const cartOverlay = document.getElementById("cartOverlay");
 const closeBtn = document.getElementById("closeCartBtn");
+const cartItemsContainer = document.getElementById("cartItemsContainer");
 
 function openCartModal() {
   cartOverlay.classList.remove("hidden");
@@ -54,32 +15,38 @@ function closeCartModal() {
   cartOverlay.classList.add("hidden");
 }
 
-cartButton.addEventListener("click", openCartModal);
-closeBtn.addEventListener("click", closeCartModal);
+if (cartButton) cartButton.addEventListener("click", openCartModal);
+if (closeBtn) closeBtn.addEventListener("click", closeCartModal);
 
-cartOverlay.addEventListener("click", (event) => {
-  if (event.target === cartOverlay) {
-    closeCartModal();
-  }
-});
+if (cartOverlay) {
+  cartOverlay.addEventListener("click", (event) => {
+    if (event.target === cartOverlay) {
+      closeCartModal();
+    }
+  });
+}
+
 async function fetchProducts() {
   try {
-    const response = await fetch(
-      "https://fakestoreapi.com/products?limit=8",
-    );
+    const response = await fetch("https://fakestoreapi.com/products?limit=8");
 
     if (!response.ok) {
       throw new Error(`HTTP помилка: ${response.status}`);
     }
 
     const realProducts = await response.json();
-
     return realProducts;
-    } catch (error) {
-      console.error("Помилка завантаження товарів: ", error.message);
-
-      throw error;
+  } catch (error) {
+    console.error("Помилка завантаження товарів: ", error.message);
+    throw error;
   }
+}
+
+function calculateTotal() {
+  return cart.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
 }
 
 function updateUI() {
@@ -101,7 +68,7 @@ function updateUI() {
               <img src="${item.image}" alt="${item.title}" width="50">
               <div class="cart-item-info">
                 <h4>${item.title}</h4>
-                <p>${item.price} грн</p>
+                <p>$${item.price}</p>
               </div>
               <div class="cart-item-controls">
                 <button class="btn-decrease" data-id="${item.id}">-</button>
@@ -119,9 +86,6 @@ function updateUI() {
   if (totalSumElement) {
     totalSumElement.textContent = calculateTotal().toFixed(2);
   }
-
-  console.log("Поточний кошик:", cart);
-  console.log("Загальна сума:", calculateTotal(), "грн");
 }
 
 function addToCart(product) {
@@ -136,25 +100,60 @@ function addToCart(product) {
   updateUI();
 }
 
-function calculateTotal() {
-  return cart.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0
-  );
+
+const productsContainer = document.querySelector(".products-grid");
+
+if (productsContainer) {
+
+  productsContainer.addEventListener("click", (event) => {
+    if (event.target.classList.contains('btn-buy')) {
+      const productId = Number(event.target.dataset.id);
+      const selectedProduct = globalStoreProducts.find((p) => p.id === productId);
+      
+      if (selectedProduct) {
+        addToCart(selectedProduct);
+      }
+    }
+  });
+
+  productsContainer.addEventListener('dragstart', (event) => {
+    const card = event.target.closest('.product-card');
+    if (card) {
+      event.dataTransfer.setData('text/plain', card.dataset.id);
+      card.classList.add('dragging');
+    }
+  });
+
+  productsContainer.addEventListener('dragend', (event) => {
+    const card = event.target.closest('.product-card');
+    if (card) {
+      card.classList.remove('dragging');
+    }
+  });
 }
 
-const container = document.querySelector(".products-grid");
 
-if (container) {
-  container.addEventListener("click", (event) => {
-    if (event.target.classList.contains("btn-buy")) {
-      const productId = Number(event.target.dataset.id);
+const favoriteZone = document.getElementById('favoriteZone');
 
-      const selectProduct = globalStoreProducts.find((p) => p.id === productId);
+if (favoriteZone) {
+  favoriteZone.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    favoriteZone.classList.add('drag-over');
+  });
 
-      if (selectProduct) {
-        addToCart(selectProduct);
-      }
+  favoriteZone.addEventListener('dragleave', () => {
+    favoriteZone.classList.remove('drag-over');
+  });
+
+  favoriteZone.addEventListener('drop', (event) => {
+    event.preventDefault();
+    favoriteZone.classList.remove('drag-over');
+    
+    const productId = event.dataTransfer.getData('text/plain');
+    const product = globalStoreProducts.find((p) => p.id == productId);
+
+    if (product) {
+      favoriteZone.innerHTML += `<div class="fav-item">❤️ ${product.title}</div>`;
     }
   });
 }
@@ -168,7 +167,6 @@ async function initShop() {
 
   try {
     const data = await fetchProducts();
-
     globalStoreProducts = data;
 
     if (loader) loader.classList.add("hidden");
@@ -176,10 +174,10 @@ async function initShop() {
     const htmlString = data
       .map(
         (product) => `
-          <article class="product-card">
+          <article class="product-card" draggable="true" data-id="${product.id}">
               <img src="${product.image}" alt="${product.title}">
               <h3>${product.title}</h3>
-              <p class="price">${product.price} грн</p>
+              <p class="price">$${product.price}</p>
               <button class="btn btn-buy" data-id="${product.id}">Купити</button>
           </article>
         `
