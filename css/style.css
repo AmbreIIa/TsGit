@@ -59,6 +59,13 @@ header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
 }
 
 .menu-toggle {
@@ -103,6 +110,11 @@ header {
   border-radius: 12px;
   display: flex;
   flex-direction: column;
+  cursor: grab;
+}
+
+.product-card:active {
+  cursor: grabbing;
 }
 
 .product-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
@@ -171,16 +183,153 @@ header {
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .hidden {
   display: none !important;
+}
+
+/* --- МОДАЛЬНЕ ВІКНО КОШИКА (ВИПРАВЛЕНО ТУТ) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-overlay.hidden {
+  display: none !important;
+}
+
+.modal-window {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #333;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.cart-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.cart-item-info {
+  flex-grow: 1;
+  margin-left: 1rem;
+}
+
+.cart-item-info h4 {
+  font-size: 0.95rem;
+  margin: 0 0 4px 0;
+}
+
+.cart-item-info p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.cart-item-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-item-controls button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.cart-item-controls button:hover {
+  background-color: #e0e0e0;
+}
+
+.modal-footer {
+  margin-top: 1.5rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-footer h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+/* --- ЗОНА УЛЮБЛЕНИХ (DRAG-AND-DROP) --- */
+.favorites-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f9f9f9;
+  margin-bottom: 1.5rem;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.favorites-zone.drag-over {
+  background-color: #e2f0d9;
+  border-color: #15ac10;
+}
+
+.product-card.dragging {
+  opacity: 0.4;
+}
+
+.fav-item {
+  background: #fff;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: left;
 }
 
 footer {
@@ -192,6 +341,7 @@ footer {
   align-items: center;
 }
 
+/* --- АДАПТИВНІСТЬ (MOBILE) --- */
 @media screen and (max-width: 768px) {
   .menu-toggle {
     display: block; 
@@ -209,42 +359,5 @@ footer {
     grid-template-columns: 1fr; 
     padding: 1rem; 
     gap: 20px;
-  }
-
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    transition: opacity 0.3s ease;
-  }
-
-  .modal-window {
-    background: #fff;
-    padding: 2rem;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  }
-
-  .close-btn {
-    background: transparent;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-
-  .hidden {
-    display: none !important;
-    opacity: 0;
   }
 }
