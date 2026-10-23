@@ -81,6 +81,11 @@
                 <p>Завантаження товарів...</p>
             </div>
 
+            <div class="search-bar" style="margin: 20px 0; display: flex; gap: 12px; align-items: center;">
+                <input type="text" id="searchInput" placeholder="Почніть вводити назву товару..." style="padding: 10px; width: 320px; border: 1px solid #ccc; border-radius: 6px;">
+                <span id="searchResultCount" style="color: #666; font-size: 14px;"></span>
+            </div>
+
             <div class="products-grid"></div>
         </section>
     </div>
@@ -110,9 +115,35 @@
 
         <div class="modal-footer">
             <h3>Разом: <span id="cartTotalSum">0</span>грн</h3>
-            <a href="check.html" class="btn btn-primary" id="checkoutBtn"
-            >Оформити замовлення</a
-            >
+            
+            <form id="checkoutOrderForm" novalidate style="margin-top: 15px; text-align: left;">
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label for="clientName" style="display: block; margin-bottom: 4px;">ПІБ покупця:</label>
+                    <input type="text" id="clientName" name="clientName" placeholder="Коваленко Олександр Сергійович" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+                    <span class="input-error" id="nameError" style="color: red; font-size: 13px;"></span>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label for="clientPhone" style="display: block; margin-bottom: 4px;">Номер телефону (+380...)</label>
+                    <input type="tel" id="clientPhone" name="clientPhone" placeholder="+38 (097) 123-45-67" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+                    <span class="input-error" id="phoneError" style="color: red; font-size: 13px;"></span>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 12px;">
+                    <label for="clientEmail" style="display: block; margin-bottom: 4px;">Електронна пошта:</label>
+                    <input type="email" id="clientEmail" name="clientEmail" placeholder="olexandr@example.com" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+                    <span class="input-error" id="emailError" style="color: red; font-size: 13px;"></span>
+                </div>
+
+                <div class="form-row" style="margin-bottom: 16px;">
+                    <label for="orderPromo" style="display: block; margin-bottom: 4px;">Промокод (якщо є):</label>
+                    <input type="text" id="orderPromo" name="orderPromo" placeholder="Введіть SALE10 для знижки 10%" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                </div>
+
+                <button type="submit" id="btnPlaceOrder" style="width: 100%; padding: 10px 20px; background: #28a785; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px;">
+                    Підтвердити замовлення
+                </button>
+            </form>
         </div>
     </div>
 </div>
