@@ -1,5 +1,7 @@
 const CART_STORAGE_KEY = 'techshop_cart';
 const THEME_STORAGE_KEY = 'techshop_key';
+const FAVORITE_STORAGE_KEY = 'techshop_favorites';
+const DRAFT_ORDER_KEY =   'techshop_order_draft';
 
 let cart = loadCartFromStorage();
 let globalStoreProducts = [];
@@ -12,6 +14,62 @@ const cartItemsContainer = document.getElementById("cartItemsContainer");
 const searchInput = document.getElementById('searchInput');
 const searchResultCount = document.getElementById('searchResultCount');
 const orderForm = document.getElementById('checkoutOrderForm');
+
+window.addEventListener('storage', (event) => {
+  if (event.key === CART_STORAGE_KEY) {
+    console.log('Виявлеено зміну кошика в сусідній вкладці!');
+    cart = loadCartFromStorage();
+    updateCartSummery();
+
+    if (typeof renderCartModalItems === 'function') {
+      renderCartModalItems();
+    }
+  }
+
+  if (event.key === THEME_STORAGE_KEY) {
+    applytheme(event.newValue || 'light');
+  }
+
+  if (event.key === FAVORITE_STORAGE_KEY) {
+    favoriteProductIds = loadFavoritesFromStorage();
+    renderFavoriteZone();
+  }
+});
+
+function saveOrderFromData() {
+  if (!orderForm) return;
+
+  const drafData = {
+    clientName: document.getElementById('clientName')?.value || '',
+    clientPhone: document.getElementById('clientPhone')?.value || '',
+    clientEmail: document.getElementById('clientEmail')?.value || '',
+    orderPromo: document.getElementById('orderPromo')?.value || ''
+  }
+
+  sessionStorage.setItem(DRAFT_ORDER_KEY, JSON.stringify(drafData));
+}
+
+function restoreOrderFromData() {
+  const rawData = sessionStorage.getItem(DRAFT_ORDER_KEY);
+  if (!rawData || !orderForm) return;
+
+  try {
+    const draft = JSON.parse(rawData);
+
+    if (draft.clientName) document.getElementById('clientName').value = draft.clientName
+    if (draft.clientPhone) document.getElementById('clientPhone').value = draft.clientPhone
+    if (draft.clientEmail) document.getElementById('clientEmail').value = draft.clientEmail
+    if (draft.orderPromo) document.getElementById('orderPromo').value = draft.orderPromo
+  } catch(error) {
+    console.error('Помилка відновлення чернетки замовлення:', error);
+  }
+}
+
+if (orderForm) {
+  orderForm.addEventListener('input', () => {
+    saveOrderFromData();
+  });
+}
 
 // --- ЗАВАНТАЖЕННЯ ТА ЗБЕРЕЖЕННЯ КОШИКА ---
 function loadCartFromStorage() {
@@ -356,7 +414,6 @@ if (productsContainer) {
   productsContainer.addEventListener("click", (event) => {
     if (event.target.classList.contains('btn-buy')) {
       const productId = Number(event.target.dataset.id);
-      // Просто передаємо ID, як вимагає нова функція addToCart
       addToCart(productId);
     }
   });
@@ -380,6 +437,55 @@ if (productsContainer) {
 // --- DRAG & DROP ДЛЯ ОБРАНОГО ---
 const favoriteZone = document.getElementById('favoriteZone');
 
+function loadFavoritesFromStorage() {
+  try {
+    const rawData = localStorage.getItem(FAVORITE_STORAGE_KEY);
+    return rawData ? JSON.parse(rawData) : [];
+  } catch (error) {
+    console.error('Помилка завантаження Favorites:', error);
+    return [];
+  }
+}
+
+let favoriteProductIds = loadFavoritesFromStorage();
+
+function saveFavoritesToStorage() {
+  localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(favoriteProductIds));
+}
+
+function renderFavoriteZone() {
+  if (!favoriteZone) return;
+
+  if (favoriteProductIds.length === 0) {
+    favoriteZone.innerHTML = '<p class="empty-fav">Перетягніть сюди товари в Улюблене</p>';
+    return;
+  }
+
+  const favoriteItems = globalStoreProducts.filter(product => favoriteProductIds.includes(product.id));
+
+  if (favoriteItems.length === 0 && globalStoreProducts.length > 0) {
+      favoriteProductIds = [];
+      saveFavoritesToStorage();
+      favoriteZone.innerHTML = '<p class="empty-fav">Перетягніть сюди товари в Улюблене</p>';
+      return;
+  } else if (favoriteItems.length === 0) {
+      favoriteZone.innerHTML = '<p class="empty-fav">Завантаження улюблених товарів...</p>';
+      return;
+  }
+
+  favoriteZone.innerHTML = `
+    <h4>Обрані товари (${favoriteItems.length}):</h4>
+    <div class="fav-chips" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+      ${favoriteItems.map(item =>`
+        <span class="fav-chip" style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+          ${item.title.substring(0, 18)}...
+          <button class="btn-remove-fav" data-id="${item.id}" style="border:none; background:none; cursor:pointer; color:red;">×</button>
+        </span>
+      `).join('')}
+    </div>
+  `;
+}
+
 if (favoriteZone) {
   favoriteZone.addEventListener('dragover', (event) => {
     event.preventDefault();
@@ -394,11 +500,21 @@ if (favoriteZone) {
     event.preventDefault();
     favoriteZone.classList.remove('drag-over');
     
-    const productId = event.dataTransfer.getData('text/plain');
-    const product = globalStoreProducts.find((p) => p.id == productId);
+    const productId = Number(event.dataTransfer.getData('text/plain'));
 
-    if (product) {
-      favoriteZone.innerHTML += `<div class="fav-item">❤️ ${product.title}</div>`;
+    if (productId && !favoriteProductIds.includes(productId)) {
+      favoriteProductIds.push(productId);
+      saveFavoritesToStorage();
+      renderFavoriteZone();
+    }
+  });
+
+  favoriteZone.addEventListener('click', (event) => {
+    if (event.target.classList.contains('btn-remove-fav')) {
+      const idToRemove = Number(event.target.dataset.id);
+      favoriteProductIds = favoriteProductIds.filter(id => id !== idToRemove);
+      saveFavoritesToStorage();
+      renderFavoriteZone();
     }
   });
 }
@@ -418,8 +534,9 @@ async function initShop() {
     if (loader) loader.classList.add("hidden");
     renderProducts(globalStoreProducts);
     
-    // Оновлюємо UI кошика після завантаження сторінки (щоб відмалювати товари зі storage)
-    updateUI(); 
+    updateUI();
+    renderFavoriteZone();
+    
   } catch (error) {
     if (loader) loader.classList.add("hidden");
     if (container) container.innerHTML = `<p class="error">Помилка: ${error.message}</p>`;
@@ -432,5 +549,9 @@ initShop();
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof updateCartSummery === 'function') {
     updateCartSummery();
+  }
+
+  if (typeof restoreOrderFromData === 'function') {
+    restoreOrderFromData();
   }
 });
