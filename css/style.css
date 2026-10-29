@@ -2,10 +2,14 @@
   --font-main: 'Inter', sans-serif;
   --primary-color: #15ac10;
   --primary-hover: #064d1b;
+  
   --text-dark: #111827;
   --bg-color: #d4cfcf;
   --white-bg: #ffffff;
   --header-bg: #a1a1a1b9;
+  
+  --border-color: #dee2e6;
+  --modal-bg: rgba(0, 0, 0, 0.6);
 }
 
 * { box-sizing: border-box; }
@@ -18,6 +22,15 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+body.dark-theme {
+  --text-dark: #d5e0eb;
+  --bg-color: #121212;
+  --white-bg: #6d6868;
+  --header-bg: #2a2a2a; 
+  --border-color: #343a40;
+  --modal-bg: rgba(0, 0, 0, 0.85);
 }
 
 main { flex: 1; }
@@ -303,7 +316,6 @@ header {
   font-size: 1.2rem;
 }
 
-/* --- ЗОНА УЛЮБЛЕНИХ (DRAG-AND-DROP) --- */
 .favorites-zone {
   border: 2px dashed #ccc;
   border-radius: 8px;
@@ -341,7 +353,6 @@ footer {
   align-items: center;
 }
 
-/* --- АДАПТИВНІСТЬ (MOBILE) --- */
 @media screen and (max-width: 768px) {
   .menu-toggle {
     display: block; 
@@ -361,3 +372,32 @@ footer {
     gap: 20px;
   }
 }
+
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.product-card,
+.modal-window,
+.favorites-zone {
+  background-color: var(--white-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-dark);
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: var(--white-bg);
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
