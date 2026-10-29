@@ -1,6 +1,10 @@
-let cart = [];
+const CART_STORAGE_KEY = 'techshop_cart';
+const THEME_STORAGE_KEY = 'techshop_key';
+
+let cart = loadCartFromStorage();
 let globalStoreProducts = [];
 
+const themeToggleBtn = document.getElementById("themeToggleBtn");
 const cartButton = document.getElementById("cartBtn");
 const cartOverlay = document.getElementById("cartOverlay");
 const closeBtn = document.getElementById("closeCartBtn");
@@ -9,31 +13,71 @@ const searchInput = document.getElementById('searchInput');
 const searchResultCount = document.getElementById('searchResultCount');
 const orderForm = document.getElementById('checkoutOrderForm');
 
-if (orderForm) {
-  orderForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const formData = new FormData(orderForm);
-
-    const rawName = formData.get('clientName') || '';
-    const rawPhone = formData.get('clientPhone') || '';
-    const rawEmail = formData.get('clientEmail') || '';
-    const rawPromo = formData.get('orderPromo') || '';
-
-    const cleanName = rawName.trim().replace(/\s+/g, ' ');
-    const cleanPhone = rawPhone.replaceAll(/[\s\(\)\-]/g, '');
-    const cleanEmail = rawEmail.trim().toLowerCase();
-    const cleanPromo = rawPromo.trim().toUpperCase();
-
-    const isFormValid = validateCheckoutForm(cleanName, cleanPhone, cleanEmail);
-    if (!isFormValid) {
-      return;
+// --- ЗАВАНТАЖЕННЯ ТА ЗБЕРЕЖЕННЯ КОШИКА ---
+function loadCartFromStorage() {
+  const rawdata = localStorage.getItem(CART_STORAGE_KEY);
+  if (!rawdata) {
+    return [];
+  }
+  try {
+    const parsedCart = JSON.parse(rawdata);
+    if (Array.isArray(parsedCart)) {
+      return parsedCart;
     }
+    return [];
+  } catch (error) {
+    console.error('Помилка парсингу кошика з localStorage:', error);
+    localStorage.removeItem(CART_STORAGE_KEY);
+    return [];
+  }
+}
 
-    completeCheckoutProcess(cleanName, cleanPhone, cleanEmail, cleanPromo);
+function saveCartToStorage() {
+  try {
+    const serializerData = JSON.stringify(cart);
+    localStorage.setItem(CART_STORAGE_KEY, serializerData);
+  } catch (error) {
+    console.error('Помилка збереження кошика у Web Storage:', error);
+  }
+}
+
+// --- ТЕМА ---
+function applytheme(themeName) {
+  const themeIcon = themeToggleBtn?.querySelector('.theme-icon');
+  const themeText = themeToggleBtn?.querySelector('.theme-text'); 
+
+  if (themeName === 'dark') {
+    document.body.classList.add('dark-theme');
+    if (themeIcon) themeIcon.textContent = '☀️';
+    if (themeText) themeText.textContent = 'Світла тема';
+  } else {
+    document.body.classList.remove('dark-theme');
+    if (themeIcon) themeIcon.textContent = '🌙';
+    if (themeText) themeText.textContent = 'Темна тема';
+  }
+}
+
+function initTheme(){
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  if (savedTheme) {
+    applytheme(savedTheme);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applytheme(prefersDark ? 'dark' : 'light');
+  }
+}
+
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener('click', () => {
+    const isCurrentlyDark = document.body.classList.contains('dark-theme');
+    const newTheme = isCurrentlyDark ? 'light' : 'dark';
+
+    applytheme(newTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, newTheme);
   });
 }
 
+// --- ВАЛІДАЦІЯ ТА ФОРМА ---
 function validateCheckoutForm(name, phone, email) {
   let isValid = true;
 
@@ -62,6 +106,31 @@ function validateCheckoutForm(name, phone, email) {
   return isValid;
 }
 
+if (orderForm) {
+  orderForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(orderForm);
+    const rawName = formData.get('clientName') || '';
+    const rawPhone = formData.get('clientPhone') || '';
+    const rawEmail = formData.get('clientEmail') || '';
+    const rawPromo = formData.get('orderPromo') || '';
+
+    const cleanName = rawName.trim().replace(/\s+/g, ' ');
+    const cleanPhone = rawPhone.replaceAll(/[\s\(\)\-]/g, '');
+    const cleanEmail = rawEmail.trim().toLowerCase();
+    const cleanPromo = rawPromo.trim().toUpperCase();
+
+    const isFormValid = validateCheckoutForm(cleanName, cleanPhone, cleanEmail);
+    if (!isFormValid) {
+      return;
+    }
+
+    completeCheckoutProcess(cleanName, cleanPhone, cleanEmail, cleanPromo);
+  });
+}
+
+// --- ПОШУК ---
 if (searchInput) {
   searchInput.addEventListener('input', (event) => {
     const searchQuery = event.target.value.trim().toLowerCase();
@@ -75,11 +144,11 @@ if (searchInput) {
     } else {
       searchResultCount.textContent = '';
     }
-
     renderProducts(matchedProducts);
   });
 }
 
+// --- РОБОТА З МОДАЛКОЮ ТА КОШИКОМ ---
 function openCartModal() {
   cartOverlay.classList.remove("hidden");
   updateUI();
@@ -100,25 +169,65 @@ if (cartOverlay) {
   });
 }
 
-async function fetchProducts() {
-  try {
-    const response = await fetch("https://fakestoreapi.com/products?limit=8");
+function addToCart(productId) {
+  const product = globalStoreProducts.find(item => item.id === Number(productId));
+  if (!product) return;
 
-    if (!response.ok) {
-      throw new Error(`HTTP помилка: ${response.status}`);
-    }
+  const existingCartItem = cart.find(item => item.id === product.id);
 
-    const realProducts = await response.json();
-    return realProducts;
-  } catch (error) {
-    console.error("Помилка завантаження товарів: ", error.message);
-    throw error;
+  if (existingCartItem) {
+    existingCartItem.quantity += 1;
+  } else {
+    cart.push({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    });
   }
+
+  saveCartToStorage();
+  updateUI();
+}
+
+function changeCartQuantity(productId, delta) {
+  const itemIndex = cart.findIndex(item => item.id === Number(productId));
+  if (itemIndex === -1) return;
+
+  cart[itemIndex].quantity += delta;
+
+  if (cart[itemIndex].quantity <= 0) {
+    cart.splice(itemIndex, 1);
+  }
+
+  saveCartToStorage();
+  updateUI();
+}
+
+function clearCart() {
+  cart = [];
+  localStorage.removeItem(CART_STORAGE_KEY);
+  updateUI();
+}
+
+// Обробка кліків всередині кошика (кнопки + та -)
+if (cartItemsContainer) {
+  cartItemsContainer.addEventListener("click", (event) => {
+    if (event.target.classList.contains("btn-increase")) {
+      const productId = event.target.dataset.id;
+      changeCartQuantity(productId, 1);
+    }
+    if (event.target.classList.contains("btn-decrease")) {
+      const productId = event.target.dataset.id;
+      changeCartQuantity(productId, -1);
+    }
+  });
 }
 
 function updateCartSummery() {
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-  const subtotalSum = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); // Виправлено: додано знак *
+  const subtotalSum = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const cartBadge = document.getElementById('num') || document.getElementById('cartCountBadge');
   const cartPriceElement = document.getElementById('total') || document.getElementById('cartTotalPrice');
@@ -167,7 +276,6 @@ function completeCheckoutProcess(name, phone, email, promo) {
   }
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
   let discountPercent = 0;
   if (promo === 'SALE10') {
     discountPercent = 10;
@@ -177,11 +285,7 @@ function completeCheckoutProcess(name, phone, email, promo) {
   const finalAmount = Math.max(0, subtotal - discountAmount);
 
   const orderData = {
-    customer: {
-      name: name,
-      phone: phone,
-      email: email
-    },
+    customer: { name, phone, email },
     items: cart.map(item => ({
       id: item.id,
       title: item.title,
@@ -198,28 +302,29 @@ function completeCheckoutProcess(name, phone, email, promo) {
   console.log("Замовлення сформовано (JSON Payload):", orderData);
   alert(`Дякуємо, ${name}! Замовлення на суму ${finalAmount} грн успішно прийнято.`);
 
-  cart = [];
-  updateCartSummery();
+  clearCart(); 
   
   if (orderForm) {
     orderForm.reset();
   }
-
   if (typeof closeCartModal === 'function') {
     closeCartModal();
   }
 }
 
-function addToCart(product) {
-  const existingItem = cart.find((item) => item.id === product.id);
-
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({ ...product, quantity: 1 });
+// --- ЗАВАНТАЖЕННЯ ТОВАРІВ З API ---
+async function fetchProducts() {
+  try {
+    const response = await fetch("https://fakestoreapi.com/products?limit=8");
+    if (!response.ok) {
+      throw new Error(`HTTP помилка: ${response.status}`);
+    }
+    const realProducts = await response.json();
+    return realProducts;
+  } catch (error) {
+    console.error("Помилка завантаження товарів: ", error.message);
+    throw error;
   }
-
-  updateUI();
 }
 
 function renderProducts(productsToRender) {
@@ -251,11 +356,8 @@ if (productsContainer) {
   productsContainer.addEventListener("click", (event) => {
     if (event.target.classList.contains('btn-buy')) {
       const productId = Number(event.target.dataset.id);
-      const selectedProduct = globalStoreProducts.find((p) => p.id === productId);
-      
-      if (selectedProduct) {
-        addToCart(selectedProduct);
-      }
+      // Просто передаємо ID, як вимагає нова функція addToCart
+      addToCart(productId);
     }
   });
 
@@ -275,6 +377,7 @@ if (productsContainer) {
   });
 }
 
+// --- DRAG & DROP ДЛЯ ОБРАНОГО ---
 const favoriteZone = document.getElementById('favoriteZone');
 
 if (favoriteZone) {
@@ -300,6 +403,7 @@ if (favoriteZone) {
   });
 }
 
+// --- ІНІЦІАЛІЗАЦІЯ ---
 async function initShop() {
   const loader = document.getElementById("loader");
   const container = document.querySelector(".products-grid");
@@ -313,10 +417,20 @@ async function initShop() {
 
     if (loader) loader.classList.add("hidden");
     renderProducts(globalStoreProducts);
+    
+    // Оновлюємо UI кошика після завантаження сторінки (щоб відмалювати товари зі storage)
+    updateUI(); 
   } catch (error) {
     if (loader) loader.classList.add("hidden");
     if (container) container.innerHTML = `<p class="error">Помилка: ${error.message}</p>`;
   }
 }
 
+initTheme();
 initShop();
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof updateCartSummery === 'function') {
+    updateCartSummery();
+  }
+});
