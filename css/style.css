@@ -204,7 +204,6 @@ header {
   display: none !important;
 }
 
-/* --- МОДАЛЬНЕ ВІКНО КОШИКА (ВИПРАВЛЕНО ТУТ) --- */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -400,4 +399,78 @@ body {
   font-size: 14px;
   transition: all 0.3s ease;
 }
+.catalog-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 20px 0 8px;
+}
 
+.toolbar-control {
+  padding: 10px 12px;
+  min-width: 200px;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+#searchInput {
+  flex: 1 1 260px;
+}
+
+.btn-secondary {
+  padding: 10px 14px;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.catalog-info {
+  margin: 0 0 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 28px 0;
+}
+
+.pagination:empty {
+  display: none;
+}
+
+.page-btn {
+  min-width: 40px;
+  padding: 8px 12px;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent-color);
+}
+
+.page-btn.is-active {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
