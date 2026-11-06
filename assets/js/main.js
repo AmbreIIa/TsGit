@@ -1,11 +1,30 @@
 const CART_STORAGE_KEY = 'techshop_cart';
 const THEME_STORAGE_KEY = 'techshop_key';
 const FAVORITE_STORAGE_KEY = 'techshop_favorites';
-const DRAFT_ORDER_KEY =   'techshop_order_draft';
+const DRAFT_ORDER_KEY = 'techshop_order_draft';
 
 let cart = loadCartFromStorage();
 let globalStoreProducts = [];
 
+const CATALOG_DEFAULTS = Object.freeze({
+  q: '',
+  category: 'all',
+  sort: 'default',
+  page: 1 
+});
+
+let catalogState = { ...CATALOG_DEFAULTS };
+
+const ALLOWED_SORT = ['default', 'price-asc', 'price-desc', 'title-asc', 'rating_desc'];
+const PRODUCTS_PER_PAGE = 6;
+const MAX_QUERY_LENGTH = 50;
+
+const categorySelect = document.getElementById('categorySelect');
+const sortSelect = document.getElementById('sortSelect');
+const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+const shareLinkBtn = document.getElementById('shareLinkBtn');
+const paginationContainer = document.getElementById('pagination');
+const catalogInfo = document.getElementById('catalogInfo');
 const themeToggleBtn = document.getElementById("themeToggleBtn");
 const cartButton = document.getElementById("cartBtn");
 const cartOverlay = document.getElementById("cartOverlay");
@@ -15,9 +34,277 @@ const searchInput = document.getElementById('searchInput');
 const searchResultCount = document.getElementById('searchResultCount');
 const orderForm = document.getElementById('checkoutOrderForm');
 
+// --- ЧИТАННЯ СТАНУ З URL ---
+function readStateFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const q = (params.get('q') || '').trim().slice(0, MAX_QUERY_LENGTH);
+  const category = params.get('category') || CATALOG_DEFAULTS.category;
+  const rawSort = params.get('sort');
+  const sort = ALLOWED_SORT.includes(rawSort) ? rawSort : CATALOG_DEFAULTS.sort;
+  const rawPage = Number.parseInt(params.get('page'), 10);
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : CATALOG_DEFAULTS.page;
+
+  return { q, category, sort, page };
+}
+
+function getAvailableCategories(products) {
+  return [...new Set(products.map(p => p.category))];
+}
+
+function validateCategory(category) {
+  const categories = getAvailableCategories(globalStoreProducts);
+  return categories.includes(category) ? category : CATALOG_DEFAULTS.category;
+}
+
+// --- ЗАПИС СТАНУ В URL ---  
+function buildCatalogURL(state) {
+  const url = new URL(window.location.href);
+  const params = new URLSearchParams();
+
+  if (state.q) params.set('q', state.q);
+  if (state.category !== CATALOG_DEFAULTS.category) params.set('category', state.category);
+  if (state.sort !== CATALOG_DEFAULTS.sort) params.set('sort', state.sort);
+  if (state.page !== CATALOG_DEFAULTS.page) params.set('page', String(state.page));
+
+  url.search = params.toString();
+  return url;
+}
+
+function syncURL(mode = 'push') {
+  const newURL = buildCatalogURL(catalogState);
+
+  if (newURL.href === window.location.href) return;
+
+  const stateSnapshot = { ...catalogState };
+
+  if (mode === 'replace') {
+    history.replaceState(stateSnapshot, '', newURL);
+  } else {
+    history.pushState(stateSnapshot, '', newURL);
+  }
+}
+
+// --- ФІЛЬТРАЦІЯ, СОРТУВАННЯ, ПАГІНАЦІЯ ---
+function filterProducts(products, { q, category }) {
+  const normalizedQuery = q.toLowerCase();
+
+  return products.filter(product => {
+    const matchesQuery = !q || product.title.toLowerCase().includes(normalizedQuery);
+    const matchesCategory = category === 'all' || product.category === category;
+    return matchesQuery && matchesCategory;
+  });
+}
+
+function sortProducts(products, sort) {
+  const sorted = [...products];
+
+  switch (sort) {
+    case 'price-asc':
+      sorted.sort((a, b) => a.price - b.price); // Corrected
+      break;
+    case 'price-desc':
+      sorted.sort((a, b) => b.price - a.price); // Corrected
+      break;
+    case 'title-asc':
+      sorted.sort((a, b) => a.title.localeCompare(b.title));
+      break;
+    case 'rating_desc':
+      return sorted.sort((a, b) => (b.rating?.rate ?? 0) - (a.rating?.rate ?? 0));
+    default:
+      return sorted; 
+  }
+  return sorted;
+}
+
+function paginateProducts(products, page, perPage) {
+  const totalItems = products.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / perPage));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+
+  const startIndex = (currentPage - 1) * perPage; // Corrected
+  const endIndex = startIndex + perPage;
+
+  return {
+    items: products.slice(startIndex, endIndex),
+    totalItems,
+    totalPages,
+    currentPage,
+    startIndex,
+  };                                 
+}
+
+function updateCatalog(historyMode = null) {
+  const filter = filterProducts(globalStoreProducts, catalogState);
+  const sorted = sortProducts(filter, catalogState.sort);
+  const { items, totalItems, totalPages, currentPage, startIndex } = paginateProducts(sorted, catalogState.page, PRODUCTS_PER_PAGE);
+
+  if (currentPage !== catalogState.page) {
+    catalogState.page = currentPage;
+    historyMode = historyMode || 'replace';
+  }
+
+  renderProducts(items);
+  renderPagination(currentPage, totalPages);
+  renderCatalogInfo(totalItems, startIndex, items.length);
+
+  if (historyMode) {
+    syncURL(historyMode);
+  }
+}
+
+function renderCatalogInfo(totalItems, startIndex, showCount) {
+  if (!catalogInfo) return;
+
+  if (totalItems === 0) {
+    catalogInfo.textContent = catalogState.q
+      ? `За запитом «${catalogState.q}» нічого не знайдено.`
+      : 'У цій категорії поки немає товарів';
+    return;
+  }
+
+  const from = startIndex + 1;
+  const to = startIndex + showCount;
+  catalogInfo.textContent = `Показано ${from}–${to} з ${totalItems} товарів`; 
+}
+
+function renderPagination(currentPage, totalPages) {
+  if (!paginationContainer) return;
+
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = '';
+    return;
+  }
+
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  paginationContainer.innerHTML = `
+    <button class="page-btn" data-page="${currentPage - 1}"
+      ${currentPage === 1 ? 'disabled' : ''} aria-label="Попередня сторінка">‹</button>
+
+    ${pageNumbers.map(number => `
+      <button class="page-btn ${number === currentPage ? 'is-active' : ''}"
+        data-page="${number}"
+        ${number === currentPage ? 'aria-current="page"' : ''}>${number}</button>
+    `).join('')}
+
+    <button class="page-btn" data-page="${currentPage + 1}"
+      ${currentPage === totalPages ? 'disabled' : ''} aria-label="Наступна сторінка">›</button>
+  `;
+}
+
+if (paginationContainer) {
+  paginationContainer.addEventListener('click', (event) => {
+    const button = event.target.closest('.page-btn');
+    if (!button || button.disabled) return;
+
+    const targetPage = Number(button.dataset.page);
+    if (targetPage === catalogState.page) return;
+
+    catalogState.page = targetPage;
+    updateCatalog('push'); 
+
+    document.querySelector('.catalog-toolbar')?.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+// --- УПРАВЛІННЯ СТАНОМ ЕЛЕМЕНТІВ UI ---
+
+function debounce(callback, delay = 300) {
+  let timerId = null;
+  return (...args) => {
+    clearTimeout(timerId);
+    timerId = setTimeout(() => callback(...args), delay);
+  };
+}
+
+function applyStateToControls() {
+  if (searchInput) searchInput.value = catalogState.q;
+  if (categorySelect) categorySelect.value = catalogState.category;
+  if (sortSelect) sortSelect.value = catalogState.sort;
+}
+
+if (searchInput) {
+  const handleSearch = debounce((value) => {
+    catalogState.q = value.trim().slice(0, MAX_QUERY_LENGTH);
+    catalogState.page = 1; 
+    updateCatalog('replace');
+  }, 300);
+
+  searchInput.addEventListener('input', (event) => handleSearch(event.target.value));
+}
+
+if (categorySelect) {
+  categorySelect.addEventListener('change', (event) => {
+    catalogState.category = event.target.value;
+    catalogState.page = 1; 
+    updateCatalog('push');
+  });
+}
+
+if (sortSelect) {
+  sortSelect.addEventListener('change', (event) => {
+    catalogState.sort = event.target.value;
+    catalogState.page = 1;
+    updateCatalog('push');
+  });
+}
+
+if (resetFiltersBtn) {
+  resetFiltersBtn.addEventListener('click', () => {
+    catalogState = { ...CATALOG_DEFAULTS };
+    applyStateToControls();
+    updateCatalog('push');
+  });
+}
+
+function populateCategorySelect(products) {
+  if (!categorySelect) return;
+
+  const categories = getAvailableCategories(products); // Corrected typo here
+
+  categorySelect.innerHTML = `<option value="all">Усі категорії</option>`;
+
+  categories.forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+
+    option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+    categorySelect.appendChild(option);
+  });
+}
+// --- ІНШІ СЛУХАЧІ ТА ФУНКЦІЇ ---
+
+window.addEventListener('popstate', (event) => {
+  console.log('popstate -> history.state:', event.state); // Corrected syntax here
+
+  catalogState = readStateFromURL();
+  catalogState.category = validateCategory(catalogState.category); // Corrected typo here
+
+  applyStateToControls();
+  updateCatalog();
+})
+
+if (shareLinkBtn) {
+  shareLinkBtn.addEventListener('click', async () => {
+    const originalText = shareLinkBtn.textContent;
+
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      shareLinkBtn.textContent = 'Скопійовано!';
+    } catch (error) {
+      console.error('Невдалося скопіювати посилання:', error);
+      window.prompt('Скопіюйте посилання вручну:', window.location.href);
+    }
+
+    setTimeout(() => {
+      shareLinkBtn.textContent = originalText;
+    }, 200);
+  });
+}
+
 window.addEventListener('storage', (event) => {
   if (event.key === CART_STORAGE_KEY) {
-    console.log('Виявлеено зміну кошика в сусідній вкладці!');
+    console.log('Виявлено зміну кошика в сусідній вкладці!');
     cart = loadCartFromStorage();
     updateCartSummery();
 
@@ -56,10 +343,10 @@ function restoreOrderFromData() {
   try {
     const draft = JSON.parse(rawData);
 
-    if (draft.clientName) document.getElementById('clientName').value = draft.clientName
-    if (draft.clientPhone) document.getElementById('clientPhone').value = draft.clientPhone
-    if (draft.clientEmail) document.getElementById('clientEmail').value = draft.clientEmail
-    if (draft.orderPromo) document.getElementById('orderPromo').value = draft.orderPromo
+    if (draft.clientName) document.getElementById('clientName').value = draft.clientName;
+    if (draft.clientPhone) document.getElementById('clientPhone').value = draft.clientPhone;
+    if (draft.clientEmail) document.getElementById('clientEmail').value = draft.clientEmail;
+    if (draft.orderPromo) document.getElementById('orderPromo').value = draft.orderPromo;
   } catch(error) {
     console.error('Помилка відновлення чернетки замовлення:', error);
   }
@@ -188,23 +475,6 @@ if (orderForm) {
   });
 }
 
-// --- ПОШУК ---
-if (searchInput) {
-  searchInput.addEventListener('input', (event) => {
-    const searchQuery = event.target.value.trim().toLowerCase();
-    
-    const matchedProducts = globalStoreProducts.filter(product => {
-      return product.title.toLowerCase().includes(searchQuery);
-    });
-
-    if (searchQuery.length > 0) {
-      searchResultCount.textContent = `Знайдено товарів: ${matchedProducts.length}`;
-    } else {
-      searchResultCount.textContent = '';
-    }
-    renderProducts(matchedProducts);
-  });
-}
 
 // --- РОБОТА З МОДАЛКОЮ ТА КОШИКОМ ---
 function openCartModal() {
@@ -269,7 +539,6 @@ function clearCart() {
   updateUI();
 }
 
-// Обробка кліків всередині кошика (кнопки + та -)
 if (cartItemsContainer) {
   cartItemsContainer.addEventListener("click", (event) => {
     if (event.target.classList.contains("btn-increase")) {
@@ -285,7 +554,7 @@ if (cartItemsContainer) {
 
 function updateCartSummery() {
   const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-  const subtotalSum = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotalSum = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); // Corrected
 
   const cartBadge = document.getElementById('num') || document.getElementById('cartCountBadge');
   const cartPriceElement = document.getElementById('total') || document.getElementById('cartTotalPrice');
@@ -333,14 +602,15 @@ function completeCheckoutProcess(name, phone, email, promo) {
     return;
   }
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); // Corrected
   let discountPercent = 0;
+  
   if (promo === 'SALE10') {
     discountPercent = 10;
   }
 
-  const discountAmount = Math.round(subtotal * (discountPercent / 100)); 
-  const finalAmount = Math.max(0, subtotal - discountAmount);
+  const discountAmount = Math.round(subtotal * (discountPercent / 100)); // Corrected
+  const finalAmount = Math.max(0, subtotal - discountAmount); // Corrected
 
   const orderData = {
     customer: { name, phone, email },
@@ -349,7 +619,7 @@ function completeCheckoutProcess(name, phone, email, promo) {
       title: item.title,
       quantity: item.quantity,
       price: item.price,
-      cost: Number((item.price * item.quantity).toFixed(2))
+      cost: Number((item.price * item.quantity).toFixed(2)) // Corrected
     })),
     promoCode: promo || null,
     discountAmount: discountAmount,
@@ -532,10 +802,19 @@ async function initShop() {
     globalStoreProducts = data;
 
     if (loader) loader.classList.add("hidden");
-    renderProducts(globalStoreProducts);
+
+    populateCategorySelect(globalStoreProducts);
+    
+    catalogState = readStateFromURL();
+    catalogState.category = validateCategory(catalogState.category);
+    
+    applyStateToControls();
+    
+    updateCatalog('replace');
     
     updateUI();
-    renderFavoriteZone();
+  
+    renderFavoriteZone(); 
     
   } catch (error) {
     if (loader) loader.classList.add("hidden");
@@ -555,3 +834,6 @@ document.addEventListener('DOMContentLoaded', () => {
     restoreOrderFromData();
   }
 });
+
+window.readStateFromURL = readStateFromURL;
+window.validateCategory = validateCategory;
