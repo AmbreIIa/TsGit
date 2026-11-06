@@ -46,7 +46,7 @@
             </li>
             <button id="themeToggleBtn" class="btn btn-theme" aria-label="Перемкнути тему">
                 <span class="theme-icon">🌙</span>
-                <span calss="theme-text">Темна тема</span>
+                <span class="theme-text">Темна тема</span>
             </button>
         </ul>
     </nav>
@@ -72,7 +72,7 @@
             </div>
 
             <div class="favorite-zone" id="favoriteZone">
-                <p> Перетягніть сюди товари Улюблене</p>
+                <p>Перетягніть сюди товари Улюблене</p>
             </div>
 
         </aside>
@@ -85,12 +85,37 @@
                 <p>Завантаження товарів...</p>
             </div>
 
-            <div class="search-bar" style="margin: 20px 0; display: flex; gap: 12px; align-items: center;">
-                <input type="text" id="searchInput" placeholder="Почніть вводити назву товару..." style="padding: 10px; width: 320px; border: 1px solid #ccc; border-radius: 6px;">
-                <span id="searchResultCount" style="color: #666; font-size: 14px;"></span>
-            </div>
+            <section class="catalog-toolbar" aria-label="Фільтри каталогу">
+                <input
+                    type="search"
+                    id="searchInput"
+                    class="toolbar-control"
+                    placeholder="Пошук товарів..."
+                    maxlength="50"
+                    autocomplete="off"
+                >
+
+                <select id="categorySelect" class="toolbar-control" aria-label="Категорія">
+                    <option value="all">Усі категорії</option>
+                </select>
+
+                <select id="sortSelect" class="toolbar-control" aria-label="Сортування">
+                    <option value="default">За замовчуванням</option>
+                    <option value="price-asc">Ціна: від дешевих до дорогих</option>
+                    <option value="price-desc">Ціна: від дорогих до дешевих</option>
+                    <option value="title-asc">Назва: А → Я</option>
+                    <option value="rating-desc">Рейтинг: найкращі спочатку</option>
+                </select>
+
+                <button type="button" id="resetFiltersBtn" class="btn btn-secondary">Скинути</button>
+                <button type="button" id="shareLinkBtn" class="btn btn-secondary">🔗 Поділитися</button>
+            </section>
+
+            <p id="catalogInfo" class="catalog-info" aria-live="polite"></p>
 
             <div class="products-grid"></div>
+            
+            <nav id="pagination" class="pagination" aria-label="Сторінки каталогу"></nav>
         </section>
     </div>
 </main>
@@ -99,9 +124,9 @@
     <p>Контактна інформація: info@tuzshop.ua | +380 00 000 00 00</p>
     <p>&copy; 2026 TuzShop</p>
         
-    <form class="subscribe-form">
+    <div class="subscribe-form">
         <a href="check.html" class="reg-btn">Оформити замовлення</a>
-    </form>
+    </div>
 </footer>
 
 <script src="./assets/js/main.js" type="module"></script>
